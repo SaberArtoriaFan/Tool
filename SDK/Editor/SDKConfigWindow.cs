@@ -11,11 +11,12 @@ public class SDKConfigWindow : EditorWindow
 {
     string SDK_NAME = "";
 
+    string CURR_SDKNAME = "";
     SDKConfigWindow()
     {
         this.titleContent = new GUIContent("SDK配置窗口");
         SDK_NAME = Read();
-
+        CURR_SDKNAME = SDK_NAME;
     }
     [MenuItem("Tool/SDKConfig")]
     static void showWindow()
@@ -57,7 +58,8 @@ public class SDKConfigWindow : EditorWindow
         //绘制SDK配置文件保存路径
         GUILayout.Space(10);
         GUILayout.Label($"SDK文件保存路径---->{SDKUtility.SDKCONFIG_PATH}\\{SDKUtility.SDKCONFIG_NAME}");
-
+        GUILayout.Space(10);
+        GUILayout.Label($"SDK包当前名称---->{CURR_SDKNAME}");
 
         //绘制描述文本区域
         GUILayout.Space(10);
@@ -111,6 +113,7 @@ public class SDKConfigWindow : EditorWindow
         //关闭流
         sw.Close();
         Debug.Log("保存成功！" + SDK_NAME);
+        CURR_SDKNAME = Read();
     }
 
     string Read() => SDKUtility.ReadSDKPackageName();
