@@ -18,7 +18,7 @@ public class SDKConfigWindow : EditorWindow
         SDK_NAME = Read();
         CURR_SDKNAME = SDK_NAME;
     }
-    [MenuItem("Tool/SDKConfig")]
+    [MenuItem(SDKUtility.SDKCONFIG_WINDOW_PATH)]
     static void showWindow()
     {
         EditorWindow.GetWindow(typeof(SDKConfigWindow));
@@ -68,6 +68,7 @@ public class SDKConfigWindow : EditorWindow
         GUILayout.Space(10);
 
         SDK_NAME = EditorGUILayout.TextArea(SDK_NAME, GUILayout.MaxHeight(20));
+        SDK_NAME = SDK_NAME.Replace("\r\n", "");
         GUILayout.EndHorizontal();
 
         EditorGUILayout.Space();

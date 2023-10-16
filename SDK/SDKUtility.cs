@@ -11,22 +11,39 @@ public class SDKUtility
     public const string SDKCONFIG_PATH = "Assets\\Resources";
     public const string SDKCONFIG_NAME = "SDK_CONFIG.txt";
 
-    public static string ReadSDKPackageName()
+    public const string SDKCONFIG_WINDOW_PATH = "Tool/SDKConfig";
+    public static string ReadSDKPackageName(bool isPlaying = false)
     {
         string s = "";
-#if UNITY_EDITOR
-        var path = $"{SDKCONFIG_PATH}\\{SDKCONFIG_NAME}";
-        //if (!Directory.Exists(SDKCONFIG_PATH)) return s;
-        if (!File.Exists(path)) return s;
-        using (StreamReader reader = new StreamReader(path, System.Text.Encoding.ASCII))
-        {
-            s = reader.ReadToEnd();
-            reader.Close();
-        }
-#else
-        var path2 = SDKCONFIG_NAME.Remove(SDKCONFIG_NAME.Length - 4);
-        s= Resources.Load<TextAsset>(path2).text;
+
+#if !UNITY_EDITOR
+            var path2 = SDKCONFIG_NAME.Remove(SDKCONFIG_NAME.Length - 4);
+            s = Resources.Load<TextAsset>(path2).text;
+            s = s.Replace("\r\n", "");
+            return s;
 #endif
+
+        if (!isPlaying)
+        {
+            var path = $"{SDKCONFIG_PATH}\\{SDKCONFIG_NAME}";
+            //if (!Directory.Exists(SDKCONFIG_PATH)) return s;
+            if (!File.Exists(path)) return s;
+            using (StreamReader reader = new StreamReader(path, System.Text.Encoding.ASCII))
+            {
+                s = reader.ReadToEnd();
+                reader.Close();
+            }
+        }
+        else
+        {
+
+            var path2 = SDKCONFIG_NAME.Remove(SDKCONFIG_NAME.Length - 4);
+            s = Resources.Load<TextAsset>(path2).text;
+            s = s.Replace("\r\n", "");
+        }
+
+
+
 
         return s;
     }

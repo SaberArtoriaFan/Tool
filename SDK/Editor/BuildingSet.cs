@@ -15,13 +15,13 @@ public class BuildSetting
 
     static void OverrideBuildPlayer(BuildPlayerOptions BPOption)
     {
-        if (EditorUtility.DisplayDialog("提示：", "\n确定要以测试服务器的形式打包？", "是", "否"))
+        if (EditorUtility.DisplayDialog("请确认SDK名称:", $"\n当前:{SDKUtility.ReadSDKPackageName()}", "表示确认", "进行修改"))
         {
             BuildPlayerWindow.DefaultBuildMethods.BuildPlayer(BPOption);//调用unity默认的打包方法。取消打包，不用写其他代码
         }
         else
         {
-            UnityEditor.EditorApplication.ExecuteMenuItem("Tool/Bug Reporter");
+            UnityEditor.EditorApplication.ExecuteMenuItem(SDKUtility.SDKCONFIG_WINDOW_PATH);
 
         }
 
