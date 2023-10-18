@@ -37,8 +37,8 @@ public class SDKUtility
         else
         {
 
-            var path2 = SDKCONFIG_NAME.Remove(SDKCONFIG_NAME.Length - 4);
-            s = Resources.Load<TextAsset>(path2).text;
+            var path3 = SDKCONFIG_NAME.Remove(SDKCONFIG_NAME.Length - 4);
+            s = Resources.Load<TextAsset>(path3).text;
             s = s.Replace("\r\n", "");
         }
 

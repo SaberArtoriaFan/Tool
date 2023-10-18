@@ -12,7 +12,7 @@ public static class JsonUtil
         //string类型的数据常量
         string readData;
         //获取到路径
-        string fileUrl =  fileName + " .json";
+        string fileUrl =  fileName + ".json";
         Debug.Log($"读取路径->{fileUrl}");
         if (File.Exists(fileUrl))
         {
@@ -45,7 +45,7 @@ public static class JsonUtil
     {
 
         string json = JsonConvert.SerializeObject(value);
-        string filepath =  fileName + " .json";
+        string filepath =  fileName + ".json";
         Debug.Log("自动保存了，内容为" + json+$"\n路径为:{filepath}");
 
         if (!File.Exists(filepath))

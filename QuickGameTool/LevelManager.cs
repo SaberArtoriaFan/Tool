@@ -16,7 +16,7 @@ public  class LevelManager : Singleton<LevelManager>
 
     protected int currLevel = 1;
     protected int currMaxLevel = 1;
-    protected int maxLevel = 10;
+    protected int maxLevel = 1000;
 
     public int CurrLevel { get => currLevel;  }
     public int CurrMaxLevel { get => currMaxLevel;  }
@@ -62,9 +62,9 @@ public  class LevelManager : Singleton<LevelManager>
     }
     public virtual void CompleteLevel()
     {
-        currMaxLevel=Mathf.Max(currLevel, maxLevel);
-        if(currLevel>GameManager.Instance.LevelNum)
-            GameManager.Instance.SaveGame();
+        currMaxLevel=Mathf.Max(currLevel, currMaxLevel);
+        if(currLevel>GameManagerBase.Instance.LevelNum)
+            GameManagerBase.Instance.SaveGame();
         Debug.Log($"通关{currLevel}");
     }
 }

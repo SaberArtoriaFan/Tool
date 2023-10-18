@@ -12,23 +12,31 @@ public class SceneFadeInOut : Singleton<SceneFadeInOut>
 {
     public float fadeSpeed = 1.5f;
     public bool sceneStarting = true;
-    private RawImage rawImage;
+    [HideInInspector]
+    public RawImage rawImage;
+    [Header("如果没拖动序列化Canvas那么将根据这个名字使用AssestLoad.Load方法加载")]
+    [SerializeField]
     string canvansName = "SceneFadeCanvas";
     Coroutine coroutine;
-    Canvas canvas;
+    
+    public Canvas canvas;
 
     void Start()
     {
-         canvas =GameObject.Instantiate(AssestLoad.Load<Canvas>(canvansName),this.transform.parent);
-        rawImage =canvas.GetComponentInChildren<RawImage>();
+        if (canvas == null)
+            canvas = GameObject.Instantiate(AssestLoad.Load<Canvas>(canvansName), this.transform.parent);
+        else
+            canvas = GameObject.Instantiate(canvas,transform.parent);
+       rawImage =canvas.GetComponentInChildren<RawImage>();
         canvas.gameObject.SetActive(false);
 
     }
 
     public void FadeScene(Func<bool> endFunc)
     {
-        if (coroutine==null)
-            coroutine = StartCoroutine(IEStartSceneFade(endFunc)) ;
+ 
+            canvas.gameObject.SetActive(true);
+             StartCoroutine(IEStartSceneFade(endFunc));
     }
 
     private void FadeToClear()
@@ -43,8 +51,8 @@ public class SceneFadeInOut : Singleton<SceneFadeInOut>
     IEnumerator IEStartSceneFade(Func<bool> endFunc)
     {
         sceneStarting = true;
-        canvas.gameObject.SetActive(true);
-
+        rawImage.enabled = true;
+        rawImage.color = Color.clear;
         yield return new WaitUntil(() =>
         {
             EndScene(endFunc());
@@ -52,14 +60,17 @@ public class SceneFadeInOut : Singleton<SceneFadeInOut>
         });
         yield return new WaitUntil(endFunc);
         sceneStarting = true;
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(0.4f);
 
         yield return new WaitUntil(() =>
         {
             StartScene();
             return sceneStarting == false;
         });
+
         coroutine = null;
+        fadeSpeed = 1.5f;
+
         canvas.gameObject.SetActive(false);
     }
     void StartScene()

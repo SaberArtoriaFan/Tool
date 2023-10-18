@@ -10,56 +10,66 @@ public interface IGameInfo
 
     public int Level { get ; set; }
 }
-public abstract class GameManager : Singleton<GameManager>
+public abstract class GameManager<T> : GameManagerBase where T: class,IGameInfo
 {
     #region 关卡
-    protected string levelDataName;
 
-    protected IGameInfo gameInfo;
-    [SerializeField]
-    protected bool isTest;
-    protected bool isNewPlayer;
-    protected Action<IGameInfo> SaveGameInfoEvent;
+    protected T gameInfo;
 
-    public int LevelNum { get => gameInfo.Level; }
-    public bool IsNewPlayer { get => isNewPlayer;  }
-    public IGameInfo GameInfo { get => gameInfo;  }
+    protected bool isNeedSaveGame = true;
 
-    protected abstract IGameInfo GetGameInfoAtFristEnter();
+    public event Action<T> SaveGameInfoEvent;
+
+    public override int LevelNum { get => gameInfo.Level; }
+    public T GameInfo { get => gameInfo;  }
+
+    /// <summary>
+    /// 定制自己的GameInfo，并决定他的初始化方式
+    /// </summary>
+    /// <returns></returns>
+    protected abstract T GetGameInfoAtFristEnter();
     //开始游戏
-   protected virtual void ReadLevel<T>() where T: class,IGameInfo
+   protected override void ReadLevel()
     {
         gameInfo = JsonUtil.ReadData<T>(levelDataName);
+
         if (gameInfo == null)
         {
             Debug.Log("首次登录，新建存档！");
             gameInfo = GetGameInfoAtFristEnter();
-            JsonUtil.Saver(levelDataName, gameInfo);
+            if(gameInfo == null)isNeedSaveGame = false;
+            if(isNeedSaveGame)
+                JsonUtil.Saver(levelDataName, gameInfo);
             isNewPlayer = true;
         }
     }
-    public virtual void SaveGame()
+    public override void SaveGame()
     {
-        SaveGameInfoEvent?.Invoke(gameInfo);
-        JsonUtil.Saver(levelDataName, gameInfo);
+        if (isNeedSaveGame&&gameInfo!=null)
+        {
+
+            SaveGameInfoEvent?.Invoke(gameInfo);
+            JsonUtil.Saver(levelDataName, gameInfo);
+        }
     }
+
     #endregion
     #region Unity回调
     protected override void Awake()
     {
         base.Awake();
         levelDataName = $"{Application.persistentDataPath}/{Application.productName}_levelData";
-
+        Debug.Log(levelDataName + "数据保存地址");
     }
     protected virtual void Start()
     {
-
+        
     }
 
 
     protected virtual void OnApplicationPause(bool pause)
     {
-        if (pause)
+        if (pause&&isNeedSaveGame&&gameInfo!=null)
         {
             SaveGameInfoEvent?.Invoke(gameInfo);
             JsonUtil.Saver(levelDataName, gameInfo);
@@ -69,10 +79,12 @@ public abstract class GameManager : Singleton<GameManager>
 
     protected virtual void OnApplicationQuit()
     {
+        if (!isNeedSaveGame || gameInfo == null) return;
         SaveGameInfoEvent?.Invoke(gameInfo);
         SaveGameInfoEvent = null;
         JsonUtil.Saver(levelDataName, gameInfo);
     }
+
     #endregion
 
 }

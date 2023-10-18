@@ -7,6 +7,8 @@ using UnityEngine.UI;
 public interface IUIBase
 {
     string Name { get; }
+    void Open();
+    void Close();
 }
 //public abstract class NetworkUIBase<T> : NetworkSingleton<T>,IUIBase where T : NetworkUIBase<T>
 //{
@@ -293,6 +295,30 @@ public abstract class UIBase<T> : MonoBehaviour, IUIBase where T : UIBase<T>
     }
     #endregion
     #region 通过再写子控件中的修改方法来达到管理子控件效果
+    public void AddToggleOnValueChange(string wedName, UnityAction<bool> action)
+    {
+        UIBehavior WedgateUIBe = GetUIBehavior(wedName);
+        if (WedgateUIBe != null)
+        {
+            WedgateUIBe.AddToggleOnValueChange(action);
+        }
+        else
+        {
+            Debug.Log("Findnot " + wedName);
+        }
+    }
+    public void ChangeToggleIsOn(string wedName, bool isOn)
+    {
+        UIBehavior WedgateUIBe = GetUIBehavior(wedName);
+        if (WedgateUIBe != null)
+        {
+            WedgateUIBe.ChangeToggleIsOn(isOn);
+        }
+        else
+        {
+            Debug.Log("Findnot " + wedName);
+        }
+    }
     public void ChangeSliderValue(string wedName,float value)
     {
         UIBehavior WedgateUIBe = GetUIBehavior(wedName);
@@ -568,30 +594,45 @@ public abstract class UIBase<T> : MonoBehaviour, IUIBase where T : UIBase<T>
     }
     #endregion
 
+    protected virtual bool IsAddButtonAudio => false;
+
+    protected virtual string buttonAduioClipName => "";
+
     Vector3 scale;
 
     public virtual void Open()
     {
-        transform.localScale /= 10;
-        transform.DOScale(scale, 0.275f);
+        var tr=BackGround!=null?BackGround.transform:transform;
+        tr.gameObject.SetActive(true);
+        tr.localScale /= 10;
+        tr.DOScale(scale, 0.275f);
     }
     public virtual void Close()
     {
-        transform.DOKill();
-        transform.localScale = scale;
+        var tr = BackGround != null ? BackGround.transform : transform;
+        tr.DOKill();
+        tr.localScale = scale;
+        tr.gameObject.SetActive(false);
     }
     protected virtual void Start()
     {
         if (BackGround != null) BackGround.SetActive(true);
 
         scale = transform.localScale;
-        foreach (var b in transform.GetComponentsInChildren<Button>())
-            b.onClick.AddListener(() => { AudioManager.PlayAudio("Button_Press_4-Marianne_Gagnon-570460555"); });
+        if(IsAddButtonAudio&&!string.IsNullOrEmpty(buttonAduioClipName))
+        {
+            foreach (var b in transform.GetComponentsInChildren<Button>(true))
+                b.onClick.AddListener(() => { AudioManager.Instance.PlayEffect(buttonAduioClipName); });
+        }
+        foreach (var b in transform.GetComponentsInChildren<Button>(true))
+        {
+            InitButton(b);
+        }
 
         uiName = this.GetType().Name;
         UIManager.RegisterPanel(this);
         //找到C层下面的所以子控件，动态添加组件
-        Transform[] AllChildren = transform.GetComponentsInChildren<Transform>();
+        Transform[] AllChildren = transform.GetComponentsInChildren<Transform>(true);
         //Debug.Log(AllChildren.Length);
         for (int i = 0; i < AllChildren.Length; i++)
         {
@@ -608,18 +649,22 @@ public abstract class UIBase<T> : MonoBehaviour, IUIBase where T : UIBase<T>
         }
         if (BackGround != null) BackGround.SetActive(false);
         //this.gameObject.SetActive(false);
-        TimerManager.Instance.AddTimer(Init,Time.deltaTime*5);
+        TimerManager.Instance.AddTimer(Init,Time.deltaTime);
+
+    }
+    protected virtual void InitButton(Button button)
+    {
 
     }
     protected virtual void Init()
     {
     }
-    protected virtual void Destroy()
+    protected virtual void OnDestroy()
     {
         if (UIManager.Instance != null)
         {
-            UIManager.Instance.DestroyPanel(transform.name);
-            UIManager.DestroyPanel<T>();
+            UIManager.Instance.DestroyPanel(Name);
+            //UIManager.DestroyPanel<T>();
         }
     }
 }

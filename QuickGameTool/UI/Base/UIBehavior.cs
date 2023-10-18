@@ -11,9 +11,30 @@ public class UIBehavior : MonoBehaviour,IFindUISub
     UISubManager belongUISub=null;
     public UISubManager MyUISubManager => belongUISub;
 
+    string uiBaseName;
+
     //通过写子控件修改自身属性的方法
     #region ChangeSelf
-
+    public void AddToggleOnValueChange(UnityAction<bool>action)
+    {
+        Toggle toggle = GetComponent<Toggle>();
+        if (toggle == null)
+        {
+            Debug.LogWarning("Findnot");
+            return;
+        }
+        toggle.onValueChanged.AddListener(action);
+    }
+    public void ChangeToggleIsOn(bool isOn)
+    {
+        Toggle toggle = GetComponent<Toggle>();
+        if (toggle == null)
+        {
+            Debug.LogWarning("Findnot");
+            return;
+        }
+        toggle.isOn =isOn;
+    }
     public void ChangeSliderValue(float value)
     {
         Slider slider = GetComponent<Slider>();
@@ -379,6 +400,7 @@ public class UIBehavior : MonoBehaviour,IFindUISub
     {
         UISubManager uISub=transform.GetComponentInParent<UISubManager>();
         IUIBase uIBase = transform.GetComponentInParent<IUIBase>();
+        uiBaseName = uIBase!=null?uIBase.Name:null;
         //Debug.Log(uIBase.name);
         if (uISub != null)
         {
@@ -387,6 +409,14 @@ public class UIBehavior : MonoBehaviour,IFindUISub
         }
         else if(uIBase!= null)
             UIManager.Instance.RegisterWedgate(uIBase.Name, transform.name, transform.gameObject);
+    }
+    protected virtual void OnDestroy()
+    {
+        if (UIManager.Instance != null)
+        {
+            if (uiBaseName != null)
+                UIManager.Instance.DestroyWedgate(uiBaseName, transform.name);
+        }
     }
 }
 

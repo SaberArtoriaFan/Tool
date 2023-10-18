@@ -8,15 +8,22 @@ using UnityEngine.SceneManagement;
 #endregion
 public class AdManager : Singleton<AdManager>
 {
-    const string SDK_NAME = "com.qxqrj.ad.AdSDK";
+    [Space(10)]
+    [SerializeField]
+    [Disable]
+    string SDK_NAME = "";
 
     AndroidJavaClass jo =null;
-    private Action _videoCB;
+    private Action succ_VideoAction;
+    private Action fail_VideoAction;
+    private Action error_VideoAction;
 
     protected override void Awake()
     {
         base.Awake();
+        SDK_NAME = SDKUtility.ReadSDKPackageName(true);
         jo = new AndroidJavaClass(SDK_NAME);
+        Debug.Log($"---------SDK:{SDK_NAME}------------");
 
     }
     protected void Start()
@@ -93,13 +100,22 @@ public class AdManager : Singleton<AdManager>
             Debug.LogError(e.Message + "ShowInterstitialFail!!!");
         }
     }
-    public  void ShowVideo()
+    public  void ShowVideo(Action succ=null,Action fail=null,Action error = null)
     {
+#if UNITY_EDITOR
+        succ?.Invoke();
+        return;
+
+#endif
+
         try
         {
             Debug.Log("ShowVideo");
 
             jo.CallStatic("ShowVideo");
+            succ_VideoAction = succ;
+            fail_VideoAction = fail;
+            error_VideoAction = error;
         }
         catch (Exception e)
         {
@@ -112,11 +128,19 @@ public class AdManager : Singleton<AdManager>
     #region 回调
     public void AfterPlayVideo(string status)
     {
-        Debug.Log("AfterPlayVideo" + status);
+        Debug.Log("接受回调AfterPlayVideo" + status);
         if (status == "success")
         {
-            _videoCB?.Invoke();
+            succ_VideoAction?.Invoke();
         }
+        else if (status == "fail")
+            fail_VideoAction?.Invoke();
+        else
+            error_VideoAction?.Invoke();
+
+        succ_VideoAction = null;
+        fail_VideoAction = null;
+        error_VideoAction = null;
     }
 
     #endregion

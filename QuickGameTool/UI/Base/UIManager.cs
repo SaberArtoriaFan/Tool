@@ -6,9 +6,33 @@ public class UIManager : AutoSingleton<UIManager>
 {
     Dictionary<string, Dictionary<string, GameObject>> AllWedgate;
     Dictionary<string, IUIBase> allUIPanel;
-    Canvas mainCanvas;
-    //public readonly string UIABPackageName = "ui";
-    public Canvas MainCanvas { get => mainCanvas; }
+
+    Canvas canvas;
+    public Canvas CurrSceneMainCanvas { get 
+        {
+            if (canvas != null && canvas.enabled == true && canvas.gameObject.activeSelf == true) return canvas;
+            else
+            {
+                var canvases = FindObjectsOfType<Canvas>();
+                canvas = null;
+                foreach(var c in canvases)
+                {
+                    if(c != null && c.enabled == true && c.gameObject.activeSelf == true)
+                    {
+                        if(c.gameObject.name.Contains("Main"))
+                        {
+                            canvas = c;
+                            break;
+                        }
+                        if(canvas!=null)
+                            canvas = c;
+                    }
+                }
+                return canvas; 
+            }
+        }
+             }
+
 
     public void ResetSelf()
     {
@@ -47,8 +71,10 @@ public class UIManager : AutoSingleton<UIManager>
         if (AllWedgate.ContainsKey(PanelName))
         {
             AllWedgate[PanelName].Clear();
-            AllWedgate[PanelName] = null;
+            AllWedgate.Remove(PanelName);
         }
+        if (Instance.allUIPanel.ContainsKey(PanelName))
+            Instance.allUIPanel.Remove(PanelName);
     }
     #endregion
     public static void RegisterPanel(IUIBase uIBase)
@@ -63,17 +89,11 @@ public class UIManager : AutoSingleton<UIManager>
             return Instance.allUIPanel[s] as T;
         else { Debug.LogError("该层级未找到！！");return null; }
     }
-    public static void DestroyPanel<T>()
-    {
-        string s = typeof(T).Name;
-        if (Instance.allUIPanel.ContainsKey(s))
-            Instance.allUIPanel.Remove(s);
-    }
+
    
     protected override void Awake()
     {
         base.Awake();
-        mainCanvas = GameObject.FindObjectOfType<Canvas>();
         AllWedgate = new Dictionary<string, Dictionary<string, GameObject>>();
         allUIPanel = new Dictionary<string, IUIBase>();
     }

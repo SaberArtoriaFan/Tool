@@ -10,9 +10,6 @@ using UnityEngine.UI;
 #endregion
 public class MySceneManager : Singleton<MySceneManager>
 {
-    public Slider loadingSlider;  //加载场景进度条，B场景中使用UGUI实现
-
-    public Text loadingText;  //显示加载进度 %
 
     private float loadingSpeed = 1;  //加载速度，这里是进度条的读取速度
 
@@ -31,18 +28,24 @@ public class MySceneManager : Singleton<MySceneManager>
         //    //StartCoroutine(AsyncLoading());  //开启协程进行异步加载
         //}
     }
-    public void AsyncLoad(string sceneName)
-    {
-        asyncLoad = SceneManager.LoadSceneAsync(sceneName);
-        //阻止当加载完成自动切换
-        asyncLoad.allowSceneActivation = false;
-        loadingSlider.value = 0.0f;  //初始化进度条
+    //public void AsyncLoad(string sceneName)
+    //{
+    //    asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+    //    //阻止当加载完成自动切换
+    //    asyncLoad.allowSceneActivation = false;
+    //    loadingSlider.value = 0.0f;  //初始化进度条
 
-    }
-    public void AsyncLoadScene(string sceneName,Action onChangeScene)
+    //}
+    public void AsyncLoadScene(string sceneName,Action onChangeScene,Action<float> changingPer)
     {
         if (asyncLoad == null)
-            StartCoroutine(AsyncLoading(sceneName,onChangeScene));
+        {
+            if(changingPer==null)
+                StartCoroutine(AsyncLoading(sceneName, onChangeScene));
+            else
+                StartCoroutine(AsyncLoadingWithSlider(sceneName, onChangeScene,changingPer));
+
+        }
     }
     IEnumerator AsyncLoading(string sceneName,Action onChangeScene)
     {
@@ -60,8 +63,8 @@ public class MySceneManager : Singleton<MySceneManager>
 
         asyncLoad.completed += (u) =>
         {
-            onChangeScene?.Invoke();
             asyncLoad = null;
+            onChangeScene?.Invoke();
         };
 
         yield return new WaitUntil(() => asyncLoad.progress >= 0.9f);
@@ -71,7 +74,63 @@ public class MySceneManager : Singleton<MySceneManager>
 
 
     } // Update is called once per frame 
+    IEnumerator AsyncLoadingWithSlider(string sceneName, Action onChangeScene, Action<float> changingPer)
+    {
+        float loadingValue = 0;
+        SceneFadeInOut.Instance.canvas.gameObject.SetActive(true);
+        asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+        //阻止当加载完成自动切换
+        asyncLoad.allowSceneActivation = false;
+        targetValue = 0f;
+        changingPer(targetValue);
+        while (true)
+        {
+            targetValue = asyncLoad.progress;
+            if (asyncLoad.progress >= 0.9f)
+            {
+                //progress的值最大为0.9 
+                targetValue = 1.0f;
+                loadingSpeed = 3f;
+            }
+            if (targetValue != loadingValue)
+            { //插值运算 
+                loadingValue = Mathf.Lerp(loadingValue, targetValue, Time.deltaTime * loadingSpeed);
+                changingPer(loadingValue);
+                if (Mathf.Abs(loadingValue - targetValue) < 0.01f)
+                //如果当前进度条value和目标值接近 设置进度条value为目标值 
+                {
+                    changingPer(targetValue);
+                    loadingSpeed = 1;
+                    break;
+                }
+            }
+            yield return new WaitForSeconds(Time.deltaTime);
+        }
 
+
+        bool control = false;
+        SceneFadeInOut.Instance.sceneStarting = true;
+        SceneFadeInOut.Instance.FadeScene(() => control);
+
+        yield return new WaitUntil(() => SceneFadeInOut.Instance.sceneStarting == false);
+
+
+  
+
+
+        asyncLoad.completed += (u) =>
+        {
+            asyncLoad = null;
+            onChangeScene?.Invoke();
+        };
+
+        //yield return new WaitUntil(() => asyncLoad.progress >= 0.9f);
+        control = true;
+        //yield return new WaitForSeconds(0.5f);
+        asyncLoad.allowSceneActivation = true;
+
+
+    }
     //void Update()
     //{
     //    if (asyncLoad == null) return;
@@ -98,7 +157,7 @@ public class MySceneManager : Singleton<MySceneManager>
     //            asyncLoad = null;
     //        }
     //    }
-    //    else if(targetValue==1.0f)
+    //    else if (targetValue == 1.0f)
     //    {
     //        asyncLoad.allowSceneActivation = true;
     //        asyncLoad = null;

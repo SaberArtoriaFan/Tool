@@ -45,8 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd4d2fd8b2eef584fbc2d1b5a6116c44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loadingSlider: {fileID: 0}
-  loadingText: {fileID: 0}
 --- !u!114 &8470464040985634292
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61,6 +59,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeSpeed: 1.5
   sceneStarting: 1
+  rawImage: {fileID: 0}
+  canvansName: SceneFadeCanvas
+  canvas: {fileID: 8568675429121816989, guid: 0ab22873d1d47d24b9f7328d1874c84e, type: 3}
 --- !u!1 &1969655886033292495
 GameObject:
   m_ObjectHideFlags: 0
@@ -164,7 +165,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7419095531258263182}
-  - component: {fileID: 7520303691367612358}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -187,20 +187,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2989170406004358830}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7520303691367612358
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2707303111186106947}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8caa3945a8720d46978298a0efe7858, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  audioResourcePath: \Resources\AudioClip
-  textAsset: {fileID: 0}
 --- !u!1 &2799694436921389906
 GameObject:
   m_ObjectHideFlags: 0
@@ -338,3 +324,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7eaedabb4ea598349813d3f8f9536d3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SDK_NAME: 

@@ -1,11 +1,9 @@
-using System.Collections.Generic;
-using System;
-using UnityEngine.Audio;
-using UnityEngine;
-using System.IO;
 using Newtonsoft.Json;
-
-public class  AudioClipName
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
+public class AudioClipName
 {
     string[] strings;
 
@@ -16,108 +14,102 @@ public class  AudioClipName
 
     public string[] Strings { get => strings; set => strings = value; }
 }
-
-public class AudioManager : Singleton<AudioManager>
+public class AudioManager : AutoSingleton<AudioManager>
 {
-    //音频管理器 存储所有的音频并且可以播放和停止
-    [Serializable]
-    public class Sound
+    public string audioResourcePath = "\\Resources\\AudioClip";
+    string audioResourceName;
+
+    [SerializeField] TextAsset textAsset;
+
+    private Dictionary<string, AudioClip> _DicAudio; //音频库(字典)
+    private List<AudioSource> effectAudioSources = new List<AudioSource>();//音频源
+    private AudioSource musicAudioSource;
+
+    //音效静音
+    private bool _effectMuted = false;
+    [HideInInspector]
+    public bool EffectMuted
     {
-        [Header("音频剪辑")]
-        private AudioClip clip;
-
-        [Header("音频分组")]
-        private AudioMixerGroup outputGroup;
-
-        [Header("音频音量")]
-        [Range(0, 1)]
-        private float volume;
-
-        [Header("音频是否自启动")]
-        private bool playOnAwake;
-
-        [Header("音频是否要循环播放")]
-        private bool loop;
-
-        public Sound(AudioClip clip, AudioMixerGroup outputGroup, float volume, bool playOnAwake, bool loop)
+        get
         {
-            this.clip = clip;
-            this.outputGroup = outputGroup;
-            this.volume = volume;
-            this.playOnAwake = playOnAwake;
-            this.loop = loop;
+            return _effectMuted;
         }
-
-        public AudioClip Clip { get => clip; set => clip = value; }
-        public AudioMixerGroup OutputGroup { get => outputGroup; set => outputGroup = value; }
-        public float Volume { get => volume; set => volume = value; }
-        public bool PlayOnAwake { get => playOnAwake; set => playOnAwake = value; }
-        public bool Loop { get => loop; set => loop = value; }
+        set
+        {
+            _effectMuted = value;
+            if (!value)
+            {
+                StopAllEffect();
+            }
+        }
+    }
+    //背景音乐静音
+    private bool _musicMuted = false;
+    [HideInInspector]
+    public bool MusicMuted
+    {
+        get
+        {
+            return _musicMuted;
+        }
+        set
+        {
+            _musicMuted = value;
+            if (value)
+            {
+                StopMusic();
+            }
+            else
+            {
+                if (musicAudioSource.clip != null) musicAudioSource.Play();
+            }
+        }
     }
 
-    public string audioResourcePath = "\\Resources\\AudioClip";
+    //[Header("VOL")]
+    //[Range(0, 1)]
+    //public float volumeOfBGM;
+    //[Range(0, 1)]
+    //public float volumeOfEffect;
 
-    //public List<Sound> sounds;//存储所有音频的信息
-//
-    //private Dictionary<string, AudioSource> audioDic;//每一个音频的名称组件
-
-    private Dictionary<string, Sound> soundDic=new Dictionary<string, Sound>();
-
-    AudioSource audioSource;
-
-    event Action OnAfterPlayAudio;
-
-    string audioResourceName;
-    Timer timer;
-
-    [SerializeField]
-    TextAsset textAsset;
-    private void OnDestroy()
+    //[Header("VOL Slider")]
+    private float _Volume = 1f;
+    public float Volume
     {
-        OnAfterPlayAudio = null;
+        get
+        {
+            return _Volume;
+        }
+        set
+        {
+            _Volume = value;
+            musicAudioSource.volume = value;
+            for (int i = 0; i < effectAudioSources.Count; i++)
+                effectAudioSources[i].volume = value;
+        }
+    }
+
+    protected override void Awake()
+    {
+        base.Awake();
+        _DicAudio = new Dictionary<string, AudioClip>();
+        //指定背景音乐的音频源
+        musicAudioSource = gameObject.AddComponent<AudioSource>();
+        for (int i = 0; i < 5; i++)
+        {
+            effectAudioSources.Add(gameObject.AddComponent<AudioSource>());
+        }
     }
     private void Start()
     {
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null) { audioSource = gameObject.AddComponent<AudioSource>(); }
-        //audioDic = new Dictionary<string, AudioSource>();
-        // Debug.Log("路径" + Application.dataPath + audioResourcePath);
-        //audioResourceName = $"{Application.persistentDataPath}/{Application.productName}_AudioName";
         audioResourceName = $"{Application.dataPath}{audioResourcePath}\\AudioNames";
-
-
-#if UNITY_EDITOR
-        DirectoryInfo root = new DirectoryInfo(Application.dataPath + audioResourcePath);
-        FileInfo[] filesInfo = root.GetFiles();
-        List<string> fileName = new List<string>();
-        foreach (var v in filesInfo)
+        var text = AssestLoad.Load<TextAsset>("AudioClip\\AudioNames");
+        if (text == null)
         {
-            if (v.Name.EndsWith(".wav"))
-            {
-                string s = v.Name.Remove(v.Name.Length - 4);
-                //Debug.Log(s);
-                fileName.Add(s);
-                var clip = AssestLoad.Load<AudioClip>($"AudioClip\\{s}");
-
-                soundDic.Add(clip.name, new Sound(clip, null, 1, false, false));
-                //Debug.Log(clip.name);
-            }
-
+            Debug.LogError($"未在{audioResourceName}路径下找到该文件，请将音频文件放至{Application.dataPath}{audioResourcePath}路径下,并点击[Test/BuildClipNames]自动生成配置文件");
         }
-        JsonUtil.Saver(audioResourceName, new AudioClipName(fileName.ToArray()));
-        //var sa = Resources.Load("AudioClip/AudioNames.json");
-
-
-#else
-
-          var text = AssestLoad.Load<TextAsset>("AudioClip/AudioNames");
         //Debug.Log(sa.name);
-        AudioClipName audioClipName = JsonConvert.DeserializeObject<AudioClipName>(text.text);
-
-        if(audioClipName == null )
-        {
-            audioClipName = JsonConvert.DeserializeObject<AudioClipName>(textAsset.text);
-        }
+        AudioClipName audioClipName = text != null ? JsonConvert.DeserializeObject<AudioClipName>(text.text) : JsonConvert.DeserializeObject<AudioClipName>(textAsset.text);
         foreach (var v in audioClipName.Strings)
         {
 
@@ -125,92 +117,96 @@ public class AudioManager : Singleton<AudioManager>
 
             var clip = AssestLoad.Load<AudioClip>($"AudioClip\\{v}");
 
-            soundDic.Add(clip.name, new Sound(clip, null, 1, false, false));
+            _DicAudio.Add(clip.name, clip);
             //Debug.Log(clip.name);
 
         }
- 
-
-  
-#endif
+    }
+    //播放音效函数：
+    public AudioSource PlayEffect(string acName, bool loop = false)
+    {
+        if (EffectMuted) return null;
+        //当传进来的名字不为空且在音频库中
+        if (_DicAudio.ContainsKey(acName) && !string.IsNullOrEmpty(acName))
+        {
+            AudioClip ac = _DicAudio[acName];
+            return PlayEffect(ac, loop);
+        }
+        return null;
+    }
+    private AudioSource PlayEffect(AudioClip ac, bool loop = false)
+    {
+        if (EffectMuted) return null;
+        if (!ac) return null;
+        for (int i = 0; i < effectAudioSources.Count; i++)
+        {
+            if (effectAudioSources[i].isPlaying) continue;
+            //当有音频源空闲时，则用其播放
+            AudioSource _as = effectAudioSources[i];
+            _as.loop = loop;
+            _as.clip = ac;
+            _as.volume = Volume;
+            _as.Play();
+            return _as;
+        }
+        //当没有多余的音频源空闲时，则创建新的音频源
+        AudioSource newAs = gameObject.AddComponent<AudioSource>();
+        newAs.loop = loop;
+        newAs.clip = ac;
+        newAs.volume = Volume;
+        newAs.Play();
+        effectAudioSources.Add(newAs);
+        return newAs;
     }
 
-
-    //播放某个音频的方法 iswait为是否等待
-    public static void PlayAudio(string name, bool iswait = false)
+    //播放BGM函数：
+    public void PlayMusic(string acName)
     {
-        if (!instance.soundDic.ContainsKey(name))
+        if (MusicMuted) return;
+        //当传进来的名字不为空且在音频库中
+        if (_DicAudio.ContainsKey(acName) && !string.IsNullOrEmpty(acName))
         {
-            //不存在次音频
-            Debug.LogError("不存在" + name + "音频");
-            return;
+            AudioClip ac = _DicAudio[acName];
+            PlayMusic(ac);
         }
-        if (iswait)
+    }
+    //暂停音效
+    public void StopEffect(string acName)
+    {
+        if (_DicAudio.ContainsKey(acName) && !string.IsNullOrEmpty(acName))
         {
-            if (!instance.audioSource.isPlaying)
+            AudioClip ac = _DicAudio[acName];
+            for (int i = 0; i < effectAudioSources.Count; i++)
             {
-                //如果是等待的情况 不在播放
-                instance.RealPlay(instance.soundDic[name], false);
-            }
-            else
-            {
-                instance.OnAfterPlayAudio +=()=> instance.RealPlay(instance.soundDic[name], true);
-
+                if (effectAudioSources[i].isPlaying && effectAudioSources[i].clip == ac)
+                    effectAudioSources[i].Stop();
             }
         }
-        else
+    }
+    //暂停所有音效
+    public void StopAllEffect()
+    {
+        for (int i = 0; i < effectAudioSources.Count; i++)
         {
-            instance.RealPlay(instance.soundDic[name], true);
+            effectAudioSources[i].Stop();
         }
     }
-    void RealPlay(Sound audioClip,bool isCover)
+    //播放背景音乐
+    private void PlayMusic(AudioClip ac)
     {
-        //if (audioSource.isPlaying)
-        //{
-        //    if (isCover)
-        //    {
-        //        audioSource.Stop();
-        //        timer?.Stop();
-        //        timer = null;
-        //    }
-        //    else
-        //        return;
-        //}
-        audioSource.PlayOneShot(audioClip.Clip);
+        if (!ac) return;
 
-        //audioSource.clip = audioClip.Clip;
-        //audioSource.volume = audioClip.Volume;
-        //audioSource.playOnAwake = false;
-        //audioSource.loop= audioClip.Loop;
-        //audioSource.outputAudioMixerGroup= audioClip.OutputGroup;
-        //timer= TimerManager.instance.AddTimer(() =>
-        //{
-        //    if (audioSource.isPlaying)
-        //        audioSource.Stop();
-        //    OnAfterPlayAudio?.Invoke();
-        //    OnAfterPlayAudio = null;
-        //    timer = null;
-        //},audioClip.Clip.length);
+        musicAudioSource.clip = ac;
+        musicAudioSource.loop = true;
+        musicAudioSource.volume = Volume;
+        musicAudioSource.Play();
+
     }
 
-    //停止音频的播放
-    public static void StopMute(string name)
+    //停止当前BGM的播放函数：
+    public void StopMusic()
     {
-
-        if (!instance.soundDic.ContainsKey(name))
-        {
-            //不存在次音频
-            Debug.LogError("不存在" + name + "音频");
-            return;
-        }
-        else
-        {
-            instance.audioSource.Stop();
-            instance.OnAfterPlayAudio = null;
-            instance.timer?.Stop();
-            instance.timer = null;
-
-        }
+        if (musicAudioSource != null && musicAudioSource.isPlaying)
+            musicAudioSource.Stop();
     }
 }
-
