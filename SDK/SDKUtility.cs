@@ -30,7 +30,7 @@ public class SDKUtility
             if (!File.Exists(path)) return s;
             using (StreamReader reader = new StreamReader(path, System.Text.Encoding.ASCII))
             {
-                s = reader.ReadToEnd();
+                s = reader.ReadLine();
                 reader.Close();
             }
         }

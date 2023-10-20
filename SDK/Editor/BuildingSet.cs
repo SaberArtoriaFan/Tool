@@ -15,7 +15,7 @@ public class BuildSetting
 
     static void OverrideBuildPlayer(BuildPlayerOptions BPOption)
     {
-        if (EditorUtility.DisplayDialog("请确认SDK名称:", $"\n当前:{SDKUtility.ReadSDKPackageName()}", "表示确认", "进行修改"))
+        if (EditorUtility.DisplayDialog("请确认SDK名称:", $"\n当前:[{SDKUtility.ReadSDKPackageName()}]", "表示确认", "进行修改"))
         {
             BuildPlayerWindow.DefaultBuildMethods.BuildPlayer(BPOption);//调用unity默认的打包方法。取消打包，不用写其他代码
         }

@@ -59,7 +59,7 @@ public class SDKConfigWindow : EditorWindow
         GUILayout.Space(10);
         GUILayout.Label($"SDK文件保存路径---->{SDKUtility.SDKCONFIG_PATH}\\{SDKUtility.SDKCONFIG_NAME}");
         GUILayout.Space(10);
-        GUILayout.Label($"SDK包当前名称---->{CURR_SDKNAME}");
+        GUILayout.Label($"SDK包当前名称---->[{CURR_SDKNAME}]");
 
         //绘制描述文本区域
         GUILayout.Space(10);
@@ -68,7 +68,7 @@ public class SDKConfigWindow : EditorWindow
         GUILayout.Space(10);
 
         SDK_NAME = EditorGUILayout.TextArea(SDK_NAME, GUILayout.MaxHeight(20));
-        SDK_NAME = SDK_NAME.Replace("\r\n", "");
+        //SDK_NAME = SDK_NAME.Replace("\r\n", "");
         GUILayout.EndHorizontal();
 
         EditorGUILayout.Space();
@@ -99,6 +99,9 @@ public class SDKConfigWindow : EditorWindow
         }
 
         SDK_NAME = SDK_NAME.Replace(" ", "");
+        SDK_NAME = SDK_NAME.Replace("\r\n", "");
+        SDK_NAME = SDK_NAME.Replace("\n", "");
+
         if (!Directory.Exists(SDKUtility.SDKCONFIG_PATH))
             Directory.CreateDirectory(SDKUtility.SDKCONFIG_PATH);
         //var now = System.DateTime.Now.ToString("yyyy年MM月dd HH时mm分ss秒");

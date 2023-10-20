@@ -23,7 +23,7 @@ public class AdManager : Singleton<AdManager>
         base.Awake();
         SDK_NAME = SDKUtility.ReadSDKPackageName(true);
         jo = new AndroidJavaClass(SDK_NAME);
-        Debug.Log($"---------SDK:{SDK_NAME}------------");
+        Debug.Log($"---------SDK:[{SDK_NAME}]------------");
 
     }
     protected void Start()
