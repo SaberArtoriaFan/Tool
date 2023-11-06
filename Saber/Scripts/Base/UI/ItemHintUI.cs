@@ -1,5 +1,4 @@
-﻿using Sirenix.OdinInspector;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -173,7 +172,6 @@ namespace Saber.Base
             isWorking = false;
             positon = default;
         }
-        [Button]
         protected void ShowTips(Vector3 pos,string content,float width,bool isUp)
         {
             int y = isUp ? 0 : 1;

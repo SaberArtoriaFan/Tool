@@ -1,5 +1,4 @@
-﻿using Sirenix.OdinInspector;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -24,7 +23,6 @@ namespace Saber.ECS
     }
     public class WorldBase : MonoBehaviour
     {
-        [ShowInInspector]
         List<string> systemName=new List<string>();
         Dictionary<object,IMono> systemDict = new Dictionary<object,IMono>();
         Dictionary<Type, IMono> componentSystemDict = new Dictionary<Type, IMono>();

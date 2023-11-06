@@ -1,13 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Sirenix.OdinInspector;
 public class UIrEMOVE : MonoBehaviour
 {
     public string UIName;
     public string ENDwith;
     public bool isAddNumber = true;
-    [Button]
     private void ChangeName()
     {
         Transform[] chilidren=GetComponentsInChildren<Transform>();

@@ -1,5 +1,4 @@
-﻿using Sirenix.OdinInspector;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,6 @@ namespace Saber.ECS
 
     public class EntityBase:MonoBehaviour,IContainerEntity
     {
-        [ShowInInspector]
         List<string> componentShow=new List<string>();
         internal Dictionary<ComponentType,ComponentBase> organDict= new Dictionary<ComponentType, ComponentBase> ();
         //internal Dictionary<ComponentBase, IDestroyComponentSystem> componentSystemDict = new Dictionary<ComponentBase, IDestroyComponentSystem>();

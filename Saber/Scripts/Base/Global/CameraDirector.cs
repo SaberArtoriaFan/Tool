@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
-using Sirenix.OdinInspector;
 public class CameraDirector : AutoSingleton<CameraDirector>
 {
     public Transform m_Camera=>Camera.main.transform;
@@ -102,7 +101,6 @@ public class CameraDirector : AutoSingleton<CameraDirector>
 
         //m_CameraParent.position = off;
     }
-    [Button]
     public void StartDirector(Vector3 pos, Vector3 dir)
     {
         MainCameraCtrl.Instance.enabled = false;
@@ -114,7 +112,6 @@ public class CameraDirector : AutoSingleton<CameraDirector>
         m_CameraParent.transform.DOMove(pos, duration);
         m_Camera.transform.DORotate(Vector3.right * 15, duration);
     }
-    [Button]
     public void EndDirector()
     {
         MainCameraCtrl.Instance.enabled = true;
