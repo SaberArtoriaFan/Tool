@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using static UnityEngine.EventSystems.EventTrigger;
+using Unity.VisualScripting;
 
 public interface IFindUISub
 {
@@ -382,6 +383,10 @@ public class UISubManager : MonoBehaviour,IFindUISub
                 {
                     RegisterWedgate(AllChildren[i].transform.name, AllChildren[i].gameObject.AddComponent<UIBehavior>());
                 }
+                Button btn = AllChildren[i].GetComponent<Button>();
+                if (btn != null)
+                    btn.AddComponent<BtnScaleEffect>();
+
             }
         }
     }

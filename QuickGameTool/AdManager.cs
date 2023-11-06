@@ -21,9 +21,9 @@ public class AdManager : Singleton<AdManager>
     protected override void Awake()
     {
         base.Awake();
-        SDK_NAME = SDKUtility.ReadSDKPackageName(true);
-        jo = new AndroidJavaClass(SDK_NAME);
+        SDK_NAME = SDKUtility.ReadSDKPackageName();
         Debug.Log($"---------SDK:[{SDK_NAME}]------------");
+        jo = new AndroidJavaClass(SDK_NAME);
 
     }
     protected void Start()
@@ -61,6 +61,9 @@ public class AdManager : Singleton<AdManager>
 
     public  void ShowBanner(string position)
     {
+#if UNITY_EDITOR
+        return;
+#endif
         try
         {
             Debug.Log("showBanner");
@@ -90,6 +93,9 @@ public class AdManager : Singleton<AdManager>
     }
     public  void ShowInterstitial(string type)
     {
+# if UNITY_EDITOR
+        return;
+#endif
         try
         {
             Debug.Log("ShowInterstitial");

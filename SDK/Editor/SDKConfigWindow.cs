@@ -106,16 +106,7 @@ public class SDKConfigWindow : EditorWindow
             Directory.CreateDirectory(SDKUtility.SDKCONFIG_PATH);
         //var now = System.DateTime.Now.ToString("yyyy年MM月dd HH时mm分ss秒");
         var path = $"{SDKUtility.SDKCONFIG_PATH}\\{SDKUtility.SDKCONFIG_NAME}";
-        //if(File.)
-        StreamWriter sw = new StreamWriter(path,false,System.Text.Encoding.ASCII);
-        sw.WriteLine(SDK_NAME);
-        //sw.WriteLine(System.DateTime.Now.ToString());
-        //sw.WriteLine(EditorSceneManager.GetActiveScene().name);
-       // sw.WriteLine(description);
-        //刷新缓存
-        sw.Flush();
-        //关闭流
-        sw.Close();
+        JsonUtil.Saver(path, new SDKUtility.SDKConfig(SDK_NAME));
         Debug.Log("保存成功！" + SDK_NAME);
         CURR_SDKNAME = Read();
     }

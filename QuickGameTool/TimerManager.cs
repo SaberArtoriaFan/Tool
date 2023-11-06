@@ -19,7 +19,7 @@ public class Timer{
     //是否完成
     private bool isFinish;
     public bool IsFinish => isFinish;
-
+    public bool isPause = false;
     public float ContinueTime { get => continueTime; }
 
     public void AddFinishAction(Action action)
@@ -36,17 +36,18 @@ public class Timer{
         this.delayTime=delayTime;
         this.isLoop=isLoop;
         this.continueTime=0;
+        this.isPause = false;
     }
 
     public void Update() {
         // Debug.Log("剩余时间");
         // Debug.Log(finishTime-Time.time);
         if(isFinish) return;
+        if (isPause) return;
         continueTime+=Time.deltaTime;
         if(onUpdate!=null) onUpdate();
         if(Time.time<finishTime) return;
-        if(!isLoop) Stop();
-        else finishTime=Time.time+delayTime;
+
    
 #if UNITY_EDITOR
         onFinished?.Invoke();
@@ -61,14 +62,22 @@ public class Timer{
             Debug.LogException(e);
         }
 #endif
+        if (!isLoop) Stop();
+        else finishTime = Time.time + delayTime;
     }
-
+    public void Pause(bool val)
+    {
+        this.isPause = val;
+    }
     //停止方法
-    public void Stop(){
+    public void Stop(bool isFinished=false){
         isFinish=true;
         continueTime=0;
         //解除事件，以免内存泄露
-        onFinished += () => onFinished = null;
+        if (isFinished)
+            onFinished?.Invoke();
+        onFinished  = null;
+
         onUpdate = null;
     }
 }

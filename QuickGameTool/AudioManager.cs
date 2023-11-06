@@ -18,7 +18,8 @@ public class AudioManager : AutoSingleton<AudioManager>
 {
     public string audioResourcePath = "\\Resources\\AudioClip";
     string audioResourceName;
-
+    
+    public bool isUseAudioResource = true;
     [SerializeField] TextAsset textAsset;
 
     private Dictionary<string, AudioClip> _DicAudio; //音频库(字典)
@@ -102,25 +103,29 @@ public class AudioManager : AutoSingleton<AudioManager>
     }
     private void Start()
     {
-        audioResourceName = $"{Application.dataPath}{audioResourcePath}\\AudioNames";
-        var text = AssestLoad.Load<TextAsset>("AudioClip\\AudioNames");
-        if (text == null)
+        if (isUseAudioResource)
         {
-            Debug.LogError($"未在{audioResourceName}路径下找到该文件，请将音频文件放至{Application.dataPath}{audioResourcePath}路径下,并点击[Test/BuildClipNames]自动生成配置文件");
+            audioResourceName = $"{Application.dataPath}{audioResourcePath}\\AudioNames";
+            var text = AssestLoad.Load<TextAsset>("AudioClip\\AudioNames");
+            if (text == null)
+            {
+                Debug.LogError($"未在{audioResourceName}路径下找到该文件，请将音频文件放至{Application.dataPath}{audioResourcePath}路径下,并点击[Test/BuildClipNames]自动生成配置文件");
+            }
+            //Debug.Log(sa.name);
+            AudioClipName audioClipName = text != null ? JsonConvert.DeserializeObject<AudioClipName>(text.text) : JsonConvert.DeserializeObject<AudioClipName>(textAsset.text);
+            foreach (var v in audioClipName.Strings)
+            {
+
+
+
+                var clip = AssestLoad.Load<AudioClip>($"AudioClip\\{v}");
+
+                _DicAudio.Add(clip.name, clip);
+                //Debug.Log(clip.name);
+
+            }
         }
-        //Debug.Log(sa.name);
-        AudioClipName audioClipName = text != null ? JsonConvert.DeserializeObject<AudioClipName>(text.text) : JsonConvert.DeserializeObject<AudioClipName>(textAsset.text);
-        foreach (var v in audioClipName.Strings)
-        {
 
-
-
-            var clip = AssestLoad.Load<AudioClip>($"AudioClip\\{v}");
-
-            _DicAudio.Add(clip.name, clip);
-            //Debug.Log(clip.name);
-
-        }
     }
     //播放音效函数：
     public AudioSource PlayEffect(string acName, bool loop = false)
@@ -134,7 +139,7 @@ public class AudioManager : AutoSingleton<AudioManager>
         }
         return null;
     }
-    private AudioSource PlayEffect(AudioClip ac, bool loop = false)
+    public AudioSource PlayEffect(AudioClip ac, bool loop = false)
     {
         if (EffectMuted) return null;
         if (!ac) return null;
@@ -176,12 +181,18 @@ public class AudioManager : AutoSingleton<AudioManager>
         if (_DicAudio.ContainsKey(acName) && !string.IsNullOrEmpty(acName))
         {
             AudioClip ac = _DicAudio[acName];
-            for (int i = 0; i < effectAudioSources.Count; i++)
-            {
-                if (effectAudioSources[i].isPlaying && effectAudioSources[i].clip == ac)
-                    effectAudioSources[i].Stop();
-            }
+            StopEffect(ac);
         }
+    }
+    public void StopEffect(AudioClip ac)
+    {
+
+        for (int i = 0; i < effectAudioSources.Count; i++)
+        {
+            if (effectAudioSources[i].isPlaying && effectAudioSources[i].clip == ac)
+                effectAudioSources[i].Stop();
+        }
+
     }
     //暂停所有音效
     public void StopAllEffect()
@@ -192,7 +203,7 @@ public class AudioManager : AutoSingleton<AudioManager>
         }
     }
     //播放背景音乐
-    private void PlayMusic(AudioClip ac)
+    public void PlayMusic(AudioClip ac)
     {
         if (!ac) return;
 

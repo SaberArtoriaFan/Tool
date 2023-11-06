@@ -654,7 +654,7 @@ public abstract class UIBase<T> : MonoBehaviour, IUIBase where T : UIBase<T>
     }
     protected virtual void InitButton(Button button)
     {
-
+        button.gameObject.AddComponent<BtnScaleEffect>();
     }
     protected virtual void Init()
     {
