@@ -162,7 +162,7 @@ namespace Ad
             var window = EditorWindow.GetWindow<RecordWindow>();
             //window.ShowPopup();
         }
-        [MenuItem("Tools//Record/Test")]
+        [MenuItem("Tools/Record/Test")]
         public static void Test()
         {
             OnEditorQuitting();
